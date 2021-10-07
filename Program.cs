@@ -8,6 +8,7 @@ namespace TimeRangeGenerator
     class Program
     {
         const float StartTime = 8.5f;
+
         static void Main(string[] args)
         {
             Console.WriteLine("Welcome to Time Range Generator v0.0.1");
@@ -16,42 +17,7 @@ namespace TimeRangeGenerator
             var year = askByYear();
             var holidays = askByHolidays();
 
-            var firstDay = new DateTime(year, month, 1);
-            var lastDay = firstDay.AddMonths(1).AddDays(-1);
-            var random = new Random();
-            var gap = 0.0f;
-
-            var schedule = Enumerable.Range(1, lastDay.Day).Select(currentDay =>
-            {
-                var day = new DateTime(year, month, currentDay);
-
-                if (day.DayOfWeek == DayOfWeek.Saturday || day.DayOfWeek == DayOfWeek.Sunday)
-                {
-                    return $"{day.ToString("yyyy-MM-dd")};;;;";
-                }
-
-                if (holidays.Contains(currentDay))
-                {
-                    return $"{day.ToString("yyyy-MM-dd")};;;;";
-                }
-
-                var journeyDuration = 9.5f;
-                var timeToLunch = 1;
-
-                if (day.DayOfWeek == DayOfWeek.Friday)
-                {
-                    journeyDuration = 6;
-                    timeToLunch = 0;
-                }
-
-                var delay = (float)random.NextDouble() * 0.5f * (gap >= 0 ? 1 : -1);
-                var initalHour = floatToTimeSpan(StartTime + delay);
-                var finalHour = floatToTimeSpan(StartTime + journeyDuration - delay + (float)random.NextDouble() * 0.2f);
-                var totalTime = finalHour - initalHour;
-                gap += ((float)totalTime.TotalHours - journeyDuration);
-                return $"{day.ToString("yyyy-MM-dd")};{initalHour};{finalHour};{totalTime - new TimeSpan(timeToLunch, 0, 0)};{(totalTime.TotalHours - timeToLunch).ToString("0.##").Replace('.', ',')}";
-            }).ToList();
-
+            var schedule = calculateSchedule(year, month, holidays);
             File.WriteAllLines($"{month}_{year}.csv", schedule);
         }
 
@@ -119,6 +85,36 @@ namespace TimeRangeGenerator
 
             } while (holidays != null);
             return holidays;
+        }
+
+        static List<string> calculateSchedule(int year, int month, List<int> holidays)
+        {
+            var firstDay = new DateTime(year, month, 1);
+            var lastDay = firstDay.AddMonths(1).AddDays(-1);
+            var random = new Random();
+            var gap = 0.0f;
+
+            return Enumerable.Range(1, lastDay.Day).Select(currentDay =>
+            {
+                var day = new DateTime(year, month, currentDay);
+
+                if (day.DayOfWeek == DayOfWeek.Saturday || day.DayOfWeek == DayOfWeek.Sunday)
+                    return $"{day.ToString("yyyy-MM-dd")};=MAX(1,2);;;";
+
+                if (holidays.Contains(currentDay))
+                    return $"{day.ToString("yyyy-MM-dd")};;;;";
+
+                var workdayDuration = day.DayOfWeek == DayOfWeek.Friday ? 6 : 9.5f;
+                var timeToLunch = day.DayOfWeek == DayOfWeek.Friday ? 0 : 1;
+
+                var delay = (float)random.NextDouble() * 0.5f * (gap >= 0 ? 1 : -1);
+                var initalHour = floatToTimeSpan(StartTime + delay);
+                var finalHour = floatToTimeSpan(StartTime + workdayDuration - delay + (float)random.NextDouble() * 0.2f);
+                var totalTime = finalHour - initalHour;
+                gap += ((float)totalTime.TotalHours - workdayDuration);
+
+                return $"{day.ToString("yyyy-MM-dd")};{initalHour};{finalHour};{totalTime - new TimeSpan(timeToLunch, 0, 0)};{(totalTime.TotalHours - timeToLunch).ToString("0.##").Replace('.', ',')}";
+            }).ToList();
         }
     }
 }
