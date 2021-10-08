@@ -7,8 +7,6 @@ namespace TimeRangeGenerator
 {
     class Program
     {
-        const float StartTime = 8.5f;
-
         static void Main(string[] args)
         {
             Console.WriteLine("Welcome to Time Range Generator v0.0.1");
@@ -17,8 +15,9 @@ namespace TimeRangeGenerator
             var year = askByYear();
             var holidays = askByHolidays();
             var fillWithSample = askByFillSchedule();
+            var startTime = fillWithSample ? askByStarTime() : 8.5f;
 
-            var schedule = calculateSchedule(year, month, holidays, fillWithSample);
+            var schedule = calculateSchedule(year, month, holidays, fillWithSample, startTime);
             File.WriteAllLines($"{month}_{year}.csv", new List<string>() { "Date;Start time;End time;Working time;Total hours" }.Concat(schedule));
         }
 
@@ -88,6 +87,29 @@ namespace TimeRangeGenerator
             return holidays;
         }
 
+        static float askByStarTime()
+        {
+            float? startTime = null;
+            do
+            {
+                try
+                {
+                    Console.WriteLine("Please, insert your start time in float format (8.5) (e.g 8:30 = 8.5, 9:15 = 9.25)[8.5]");
+                    var line = Console.ReadLine();
+                    if (line == String.Empty)
+                        return 8.5f;
+
+                    startTime = float.Parse(line);
+                }
+                catch
+                {
+                    startTime = null;
+                }
+
+            } while (startTime == null);
+            return startTime.Value;
+        }
+
         static bool askByFillSchedule()
         {
             do
@@ -102,7 +124,7 @@ namespace TimeRangeGenerator
             } while (true);
         }
 
-        static List<string> calculateSchedule(int year, int month, List<int> holidays, bool fillWithSample)
+        static List<string> calculateSchedule(int year, int month, List<int> holidays, bool fillWithSample, float startTime)
         {
             var firstDay = new DateTime(year, month, 1);
             var lastDay = firstDay.AddMonths(1).AddDays(-1);
@@ -126,8 +148,8 @@ namespace TimeRangeGenerator
                 var timeToLunch = day.DayOfWeek == DayOfWeek.Friday ? 0 : 1;
 
                 var delay = (float)random.NextDouble() * 0.5f * (gap >= 0 ? 1 : -1);
-                var initalHour = floatToTimeSpan(StartTime + delay);
-                var finalHour = floatToTimeSpan(StartTime + workdayDuration - delay + (float)random.NextDouble() * 0.2f);
+                var initalHour = floatToTimeSpan(startTime + delay);
+                var finalHour = floatToTimeSpan(startTime + workdayDuration - delay + (float)random.NextDouble() * 0.2f);
                 var totalTime = finalHour - initalHour;
                 gap += ((float)totalTime.TotalHours - workdayDuration);
 
