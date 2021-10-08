@@ -16,9 +16,10 @@ namespace TimeRangeGenerator
             var month = askByMonth();
             var year = askByYear();
             var holidays = askByHolidays();
+            var fillWithSample = askByFillSchedule();
 
-            var schedule = calculateSchedule(year, month, holidays);
-            File.WriteAllLines($"{month}_{year}.csv", schedule);
+            var schedule = calculateSchedule(year, month, holidays, fillWithSample);
+            File.WriteAllLines($"{month}_{year}.csv", new List<string>() { "Date;Start time;End time;Working time;Total hours" }.Concat(schedule));
         }
 
         static TimeSpan floatToTimeSpan(float time)
@@ -87,7 +88,21 @@ namespace TimeRangeGenerator
             return holidays;
         }
 
-        static List<string> calculateSchedule(int year, int month, List<int> holidays)
+        static bool askByFillSchedule()
+        {
+            do
+            {
+                Console.WriteLine("Do you want to fill the schedule with samples? (y/n)[y]");
+                var line = Console.ReadLine();
+                if (line == String.Empty || line.ToLower() == "y")
+                    return true;
+
+                if (line.ToLower() == "n")
+                    return false;
+            } while (true);
+        }
+
+        static List<string> calculateSchedule(int year, int month, List<int> holidays, bool fillWithSample)
         {
             var firstDay = new DateTime(year, month, 1);
             var lastDay = firstDay.AddMonths(1).AddDays(-1);
@@ -99,10 +114,13 @@ namespace TimeRangeGenerator
                 var day = new DateTime(year, month, currentDay);
 
                 if (day.DayOfWeek == DayOfWeek.Saturday || day.DayOfWeek == DayOfWeek.Sunday)
-                    return $"{day.ToString("yyyy-MM-dd")};=MAX(1,2);;;";
+                    return $"{day.ToString("yyyy-MM-dd")};{day.DayOfWeek};-;-;-";
 
                 if (holidays.Contains(currentDay))
-                    return $"{day.ToString("yyyy-MM-dd")};;;;";
+                    return $"{day.ToString("yyyy-MM-dd")};Holidays;-;-;-";
+
+                if (!fillWithSample)
+                    return $"{day.ToString("yyyy-MM-dd")};;;=C{currentDay + 1}-B{currentDay + 1};=HOUR(D{currentDay + 1}) + MINUTE(D{currentDay + 1})/60 - 1";
 
                 var workdayDuration = day.DayOfWeek == DayOfWeek.Friday ? 6 : 9.5f;
                 var timeToLunch = day.DayOfWeek == DayOfWeek.Friday ? 0 : 1;
