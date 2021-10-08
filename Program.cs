@@ -153,7 +153,7 @@ namespace TimeRangeGenerator
                 var totalTime = finalHour - initalHour;
                 gap += ((float)totalTime.TotalHours - workdayDuration);
 
-                return $"{day.ToString("yyyy-MM-dd")};{initalHour};{finalHour};{totalTime - new TimeSpan(timeToLunch, 0, 0)};{(totalTime.TotalHours - timeToLunch).ToString("0.##").Replace('.', ',')}";
+                return $"{day.ToString("yyyy-MM-dd")};{initalHour};{finalHour};=C{currentDay + 1}-B{currentDay + 1};=HOUR(D{currentDay + 1}) + MINUTE(D{currentDay + 1})/60 - {timeToLunch}";
             }).ToList();
         }
     }
