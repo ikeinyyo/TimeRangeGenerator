@@ -141,11 +141,11 @@ namespace TimeRangeGenerator
                 if (holidays.Contains(currentDay))
                     return $"{day.ToString("yyyy-MM-dd")};Holidays;-;-;-";
 
-                if (!fillWithSample)
-                    return $"{day.ToString("yyyy-MM-dd")};;;=C{currentDay + 1}-B{currentDay + 1};=HOUR(D{currentDay + 1}) + MINUTE(D{currentDay + 1})/60 - 1";
-
                 var workdayDuration = day.DayOfWeek == DayOfWeek.Friday ? 6 : 9.5f;
                 var timeToLunch = day.DayOfWeek == DayOfWeek.Friday ? 0 : 1;
+
+                if (!fillWithSample)
+                    return $"{day.ToString("yyyy-MM-dd")};;;=C{currentDay + 1}-B{currentDay + 1};=HOUR(D{currentDay + 1}) + MINUTE(D{currentDay + 1})/60 - {timeToLunch}";
 
                 var delay = (float)random.NextDouble() * 0.5f * (gap >= 0 ? 1 : -1);
                 var initalHour = floatToTimeSpan(startTime + delay);
