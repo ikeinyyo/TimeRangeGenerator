@@ -9,7 +9,7 @@ namespace TimeRangeGenerator
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Welcome to Time Range Generator v0.0.1");
+            Console.WriteLine("Welcome to Time Range Generator v0.0.3");
 
             var month = askByMonth();
             var year = askByYear();
@@ -153,7 +153,7 @@ namespace TimeRangeGenerator
                 var totalTime = finalHour - initalHour;
                 gap += ((float)totalTime.TotalHours - workdayDuration);
 
-                return $"{day.ToString("yyyy-MM-dd")};{initalHour};{finalHour};=C{currentDay + 1}-B{currentDay + 1};=HOUR(D{currentDay + 1}) + MINUTE(D{currentDay + 1})/60 - {timeToLunch}";
+                return $"{day.ToString("yyyy-MM-dd")};{initalHour.ToString(@"hh\:mm")};{finalHour.ToString(@"hh\:mm")};=C{currentDay + 1}-B{currentDay + 1};=HOUR(D{currentDay + 1}) + MINUTE(D{currentDay + 1})/60 - {timeToLunch}";
             }).ToList();
         }
     }
