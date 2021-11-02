@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -9,7 +10,7 @@ namespace TimeRangeGenerator
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Welcome to Time Range Generator v0.0.3");
+            Console.WriteLine("Welcome to Time Range Generator v0.0.4");
 
             var month = askByMonth();
             var year = askByYear();
@@ -99,7 +100,8 @@ namespace TimeRangeGenerator
                     if (line == String.Empty)
                         return 8.5f;
 
-                    startTime = float.Parse(line);
+                    line = line.Replace(',', '.');
+                    startTime = float.Parse(line, CultureInfo.InvariantCulture);
                 }
                 catch
                 {
